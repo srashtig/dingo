@@ -117,7 +117,6 @@ def set_train_transforms(wfd, data_settings, asd_dataset_path, omit_transforms=N
 
     # Build transforms.
     transforms = [
-                  LensingTransform(data_settings["extrinsic_prior"],domain),
                   SampleExtrinsicParameters(extrinsic_prior_dict),
                   GetDetectorTimes(ifo_list, ref_time)]
     
