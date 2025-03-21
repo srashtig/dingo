@@ -22,6 +22,7 @@ from dingo.gw.transforms import (
     SampleExtrinsicParameters,
     GetDetectorTimes,
 )
+from dingo.gw.transforms.waveform_transforms_lensing import LensingTransform
 from dingo.gw.noise.asd_dataset import ASDDataset
 from dingo.gw.prior import default_inference_parameters
 from dingo.gw.gwutils import *
@@ -116,10 +117,10 @@ def set_train_transforms(wfd, data_settings, asd_dataset_path, omit_transforms=N
 
     # Build transforms.
     transforms = [
-        SampleExtrinsicParameters(extrinsic_prior_dict),
-        GetDetectorTimes(ifo_list, ref_time),
-    ]
-
+                  LensingTransform(data_settings["extrinsic_prior"],domain),
+                  SampleExtrinsicParameters(extrinsic_prior_dict),
+                  GetDetectorTimes(ifo_list, ref_time)]
+    
     extra_context_parameters = []
     if "gnpe_time_shifts" in data_settings:
         d = data_settings["gnpe_time_shifts"]
@@ -160,7 +161,7 @@ def set_train_transforms(wfd, data_settings, asd_dataset_path, omit_transforms=N
             torchvision.transforms.Compose(transforms),
         )
         data_settings["standardization"] = standardization_dict
-
+    transforms.append(LensingTransform(domain))
     transforms.append(ProjectOntoDetectors(ifo_list, domain, ref_time))
     transforms.append(SampleNoiseASD(asd_dataset))
     transforms.append(WhitenAndScaleStrain(domain.noise_std))
