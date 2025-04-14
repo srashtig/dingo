@@ -20,6 +20,7 @@ from dingo.gw.waveform_generator.waveform_generator import (
     WaveformGenerator,
     NewInterfaceWaveformGenerator,
 )
+from dingo.gw.transforms.waveform_transforms_lensing import LensingTransform
 
 
 class GWSignal(object):
@@ -124,7 +125,7 @@ class GWSignal(object):
         self._initialize_transform()
 
     def _initialize_transform(self):
-        transforms = [
+        transforms = [LensingTransform(self.waveform_generator.domain), ## changed to include lensing
             GetDetectorTimes(self.ifo_list, self.t_ref),
             ProjectOntoDetectors(self.ifo_list, self.data_domain, self.t_ref),
         ]

@@ -2,6 +2,7 @@ from glow.freq_domain_c import Fw_AnalyticPointLens_C
 from glow import lenses
 import astropy.constants as c
 import numpy as np
+from dingo.gw.transforms.utils import get_batch_size_of_input_sample
 import lal
 
 """ Lensed waveforms using GLOW """
@@ -35,8 +36,15 @@ class LensingTransform(object):
         y_arr=extrinsic_parameters.pop("y")
 
         MLz_arr = 10**LogMLz_arr
-        Ffs = np.array([compute_Ff(MLz,y,self.domain,self.GMsun8pi) for (MLz,y) in zip(MLz_arr,y_arr)])
         
+        batched, batch_size = get_batch_size_of_input_sample(sample)
+        
+        if not batched:
+            Ffs = compute_Ff(MLz_arr,y_arr,self.domain,self.GMsun8pi)
+        else:
+            Ffs = np.array([compute_Ff(MLz,y,self.domain,self.GMsun8pi) for (MLz,y) in zip(MLz_arr,y_arr)])
+
+                
         h_plus = sample["waveform"]["h_plus"].copy()
         h_cross = sample["waveform"]["h_cross"].copy()
         sample["waveform"]["h_plus"] = Ffs * h_plus   

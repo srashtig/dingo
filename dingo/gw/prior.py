@@ -189,7 +189,10 @@ def split_off_extrinsic_parameters(theta):
     theta_extrinsic: dict
         BBH extrinsic parameters.
     """
-    extrinsic_parameters = ["geocent_time", "luminosity_distance", "ra", "dec", "psi"]
+    #extrinsic_parameters = ["geocent_time", "luminosity_distance", "ra", "dec", "psi"]
+    ## changed to include lensing 
+    extrinsic_parameters = ["geocent_time", "luminosity_distance", "ra", "dec", "psi", "LogMLz", "y"]
+
     theta_intrinsic = {}
     theta_extrinsic = {}
     for k, v in theta.items():
