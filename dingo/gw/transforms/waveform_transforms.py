@@ -16,7 +16,7 @@ def compute_Ff(MLz, y, domain, GMsun8pi):
     return Ff
     
     
-class LensingTransform(object):
+class LensingTransformPL(object):
     """
     Return lensed waveform
     """

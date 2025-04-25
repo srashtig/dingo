@@ -329,7 +329,7 @@ class Result(CoreResult):
                 )
                 wfg_domain_dict["delta_f"] = delta_f_new
         wfg_domain = build_domain(wfg_domain_dict)
-
+        add_transform = self.base_metadata['train_settings']['data'].get('add_transform',None)
         self.likelihood = StationaryGaussianGWLikelihood(
             wfg_kwargs=self.base_metadata["dataset_settings"]["waveform_generator"],
             wfg_domain=wfg_domain,
@@ -340,6 +340,9 @@ class Result(CoreResult):
             phase_marginalization_kwargs=phase_marginalization_kwargs,
             calibration_marginalization_kwargs=calibration_marginalization_kwargs,
             phase_grid=phase_grid,
+            add_transform=add_transform,
+            extrinsic_parameter_names = list(get_extrinsic_prior_dict(
+            self.base_metadata["train_settings"]["data"]["extrinsic_prior"]).keys())
         )
 
     def sample_synthetic_phase(

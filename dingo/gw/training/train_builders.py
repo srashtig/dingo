@@ -22,12 +22,11 @@ from dingo.gw.transforms import (
     SampleExtrinsicParameters,
     GetDetectorTimes,
 )
-from dingo.gw.transforms.waveform_transforms_lensing import LensingTransform
 from dingo.gw.noise.asd_dataset import ASDDataset
 from dingo.gw.prior import default_inference_parameters
 from dingo.gw.gwutils import *
 from dingo.core.utils import *
-
+import importlib
 
 def build_dataset(
     data_settings: dict,
@@ -160,7 +159,14 @@ def set_train_transforms(wfd, data_settings, asd_dataset_path, omit_transforms=N
             torchvision.transforms.Compose(transforms),
         )
         data_settings["standardization"] = standardization_dict
-    transforms.append(LensingTransform(domain))
+    
+    add_transform = data_settings.get("add_transform", None)
+    
+    if add_transform is not None:
+        mod = importlib.import_module(add_transform["module"])
+        transforms.append(getattr(mod,add_transform["func"])(domain))
+        print("Adding transform to the frequency domain waveform: ", add_transform["func"])
+        
     transforms.append(ProjectOntoDetectors(ifo_list, domain, ref_time))
     transforms.append(SampleNoiseASD(asd_dataset))
     transforms.append(WhitenAndScaleStrain(domain.noise_std))

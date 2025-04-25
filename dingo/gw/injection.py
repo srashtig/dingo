@@ -1,6 +1,7 @@
 import numpy as np
 from bilby.gw.detector import InterferometerList
 from torchvision.transforms import Compose
+import importlib
 
 from dingo.gw.noise.asd_dataset import ASDDataset
 from dingo.gw.domains import (
@@ -20,7 +21,7 @@ from dingo.gw.waveform_generator.waveform_generator import (
     WaveformGenerator,
     NewInterfaceWaveformGenerator,
 )
-from dingo.gw.transforms.waveform_transforms_lensing import LensingTransform
+#from dingo.gw.transforms.waveform_transforms import LensingTransformPL
 
 
 class GWSignal(object):
@@ -38,6 +39,8 @@ class GWSignal(object):
         data_domain: FrequencyDomain,
         ifo_list: list,
         t_ref: float,
+        add_transform: dict,
+        extrinsic_parameter_names : list
     ):
         """
         Parameters
@@ -57,7 +60,7 @@ class GWSignal(object):
 
         self._check_domains(wfg_domain, data_domain)
         self.data_domain = data_domain
-
+        self.extrinsic_parameter_names = extrinsic_parameter_names
         # The waveform generator potentially has a larger frequency range than the
         # domain of the trained network / requested injection / etc. This is typically
         # the case for EOB waveforms, which require the larger range to generate
@@ -73,12 +76,12 @@ class GWSignal(object):
 
         self.t_ref = t_ref
         self.ifo_list = InterferometerList(ifo_list)
+        self.add_transform = add_transform
 
         # When we set self.whiten, the projection transforms are automatically prepared.
         self._calibration_envelope = None
         self._calibration_marginalization_kwargs = None
         self.whiten = False
-
         self.asd = None
 
     @staticmethod
@@ -125,10 +128,19 @@ class GWSignal(object):
         self._initialize_transform()
 
     def _initialize_transform(self):
-        transforms = [LensingTransform(self.waveform_generator.domain), ## changed to include lensing
-            GetDetectorTimes(self.ifo_list, self.t_ref),
-            ProjectOntoDetectors(self.ifo_list, self.data_domain, self.t_ref),
-        ]
+        transforms=[]
+        if self.add_transform is not None:
+            mod = importlib.import_module(self.add_transform["module"])
+            transforms.append(
+                getattr(
+                    mod,self.add_transform["func"]
+                )(self.waveform_generator.domain)
+            )
+            print("Adding transform to the frequency domain waveform: ", self.add_transform["func"])   
+            
+            #transforms = [LensingTransformPL(self.waveform_generator.domain), ## changed to include lensing
+            transforms.append(GetDetectorTimes(self.ifo_list, self.t_ref))
+            transforms.append(ProjectOntoDetectors(self.ifo_list, self.data_domain, self.t_ref))
         if self.calibration_marginalization_kwargs:
             transforms.append(
                 ApplyCalibrationUncertainty(
@@ -164,7 +176,7 @@ class GWSignal(object):
                 parameters: waveform parameters
                 asd (if set): amplitude spectral density for each detector
         """
-        theta_intrinsic, theta_extrinsic = split_off_extrinsic_parameters(theta)
+        theta_intrinsic, theta_extrinsic = split_off_extrinsic_parameters(theta, self.extrinsic_parameter_names)
         theta_intrinsic = {k: float(v) for k, v in theta_intrinsic.items()}
 
         # Step 1: generate polarizations h_plus and h_cross
@@ -218,7 +230,7 @@ class GWSignal(object):
                 parameters: waveform parameters
                 asd (if set): amplitude spectral density for each detector
         """
-        theta_intrinsic, theta_extrinsic = split_off_extrinsic_parameters(theta)
+        theta_intrinsic, theta_extrinsic = split_off_extrinsic_parameters(theta, self.extrinsic_parameter_names)
         theta_intrinsic = {k: float(v) for k, v in theta_intrinsic.items()}
 
         # Step 1: generate m-contributions to polarizations h_plus and h_cross
@@ -319,7 +331,8 @@ class Injection(GWSignal):
             metadata["train_settings"]["data"]["extrinsic_prior"]
         )
         prior = build_prior_with_defaults({**intrinsic_prior, **extrinsic_prior})
-
+        add_transform = metadata["train_settings"]["data"].get("add_transform", None)
+        
         return cls(
             prior=prior,
             wfg_kwargs=metadata["dataset_settings"]["waveform_generator"],
@@ -327,6 +340,8 @@ class Injection(GWSignal):
             data_domain=build_domain_from_model_metadata(metadata),
             ifo_list=metadata["train_settings"]["data"]["detectors"],
             t_ref=metadata["train_settings"]["data"]["ref_time"],
+            add_transform = add_transform,
+            extrinsic_parameter_names = list(extrinsic_prior.keys())
         )
 
     def injection(self, theta):

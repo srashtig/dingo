@@ -31,6 +31,8 @@ class StationaryGaussianGWLikelihood(GWSignal, Likelihood):
         phase_marginalization_kwargs=None,
         calibration_marginalization_kwargs=None,
         phase_grid=None,
+        add_transform=None,
+        extrinsic_parameter_names = ["geocent_time", "luminosity_distance", "ra", "dec", "psi"]
     ):
         # TODO: Does the phase_grid argument ever get used?
         """
@@ -61,6 +63,8 @@ class StationaryGaussianGWLikelihood(GWSignal, Likelihood):
             data_domain=data_domain,
             ifo_list=list(event_data["waveform"].keys()),
             t_ref=t_ref,
+            add_transform=add_transform,
+            extrinsic_parameter_names=extrinsic_parameter_names
         )
 
         self.asd = event_data["asds"]
@@ -696,7 +700,7 @@ def build_stationary_gaussian_likelihood(
     event_data, data_domain = get_event_data_and_domain(
         metadata["model"], event_dataset=event_dataset, **metadata["event"]
     )
-
+    add_transform = metadata["model"]["dataset_settings"].get(add_transform,None)
     # set up likelihood
     likelihood = StationaryGaussianGWLikelihood(
         wfg_kwargs=metadata["model"]["dataset_settings"]["waveform_generator"],
@@ -705,6 +709,9 @@ def build_stationary_gaussian_likelihood(
         event_data=event_data,
         t_ref=metadata["event"]["time_event"],
         time_marginalization_kwargs=time_marginalization_kwargs,
+        add_transform = add_transform,
+        extrinsic_parameter_names = get_extrinsic_prior_dict(
+            metadata["model"]["train_settings"]["data"]["extrinsic_prior"]).keys()
     )
 
     return likelihood

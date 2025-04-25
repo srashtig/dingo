@@ -172,7 +172,7 @@ def build_prior_with_defaults(prior_settings: Dict[str, str]):
     return BBHPriorDict(full_prior_settings)
 
 
-def split_off_extrinsic_parameters(theta):
+def split_off_extrinsic_parameters(theta,extrinsic_parameters=["geocent_time", "luminosity_distance", "ra", "dec", "psi"]):
     """
     Split theta into intrinsic and extrinsic parameters.
 
@@ -189,9 +189,6 @@ def split_off_extrinsic_parameters(theta):
     theta_extrinsic: dict
         BBH extrinsic parameters.
     """
-    #extrinsic_parameters = ["geocent_time", "luminosity_distance", "ra", "dec", "psi"]
-    ## changed to include lensing 
-    extrinsic_parameters = ["geocent_time", "luminosity_distance", "ra", "dec", "psi", "LogMLz", "y"]
 
     theta_intrinsic = {}
     theta_extrinsic = {}

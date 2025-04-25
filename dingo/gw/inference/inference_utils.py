@@ -14,6 +14,7 @@ def prepare_log_prob(
     remove_init_outliers: Optional[float] = 0.0,
     low_latency_label: str = None,
     outdir: str = None,
+    return_sampler: Optional[bool] = False
 ):
     """
     Prepare gnpe sampling with log_prob. This is required, since in its vanilla
@@ -66,3 +67,5 @@ def prepare_log_prob(
     sampler.init_sampler = GWSampler(model=unconditional_model)
     sampler.num_iterations = 1
     sampler.remove_init_outliers = 0.0  # Turn off for final sampler.
+    if return_sampler:
+        return sampler
