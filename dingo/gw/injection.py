@@ -139,8 +139,8 @@ class GWSignal(object):
             print("Adding transform to the frequency domain waveform: ", self.add_transform["func"])   
             
             #transforms = [LensingTransformPL(self.waveform_generator.domain), ## changed to include lensing
-            transforms.append(GetDetectorTimes(self.ifo_list, self.t_ref))
-            transforms.append(ProjectOntoDetectors(self.ifo_list, self.data_domain, self.t_ref))
+        transforms.append(GetDetectorTimes(self.ifo_list, self.t_ref))
+        transforms.append(ProjectOntoDetectors(self.ifo_list, self.data_domain, self.t_ref))
         if self.calibration_marginalization_kwargs:
             transforms.append(
                 ApplyCalibrationUncertainty(
