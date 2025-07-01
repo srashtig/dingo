@@ -38,7 +38,7 @@ class StationaryGaussianGWLikelihood(GWSignal, Likelihood):
         calibration_marginalization_kwargs=None,
         phase_grid=None,
         add_transform=None,
-        extrinsic_parameter_names = ["geocent_time", "luminosity_distance", "ra", "dec", "psi"]
+        extrinsic_parameter_names = ["geocent_time", "luminosity_distance", "ra", "dec", "psi"],
         use_base_domain=False,
     ):
         # TODO: Does the phase_grid argument ever get used?

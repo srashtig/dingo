@@ -356,7 +356,7 @@ class Result(CoreResult):
             phase_grid=phase_grid,
             add_transform=add_transform,
             extrinsic_parameter_names = list(get_extrinsic_prior_dict(
-            self.base_metadata["train_settings"]["data"]["extrinsic_prior"]).keys())
+            self.base_metadata["train_settings"]["data"]["extrinsic_prior"]).keys()),
             use_base_domain=self.use_base_domain,
         )
 

@@ -192,4 +192,3 @@ def check_sample_in_domain(sample, domain: UniformFrequencyDomain) -> bool:
         return True
     else:
         return False
->>>>>>> d30ac0fd266758e8bfb164986276c02a1c02a192
