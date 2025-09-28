@@ -13,7 +13,7 @@ def compute_Ff(MLz, y, domain, GMsun8pi):
     Ff = Fw_AnalyticPointLens_C(y, {"parallel": False}).eval_Fw(w)
     Ff[0] = 1.0
         
-    return Ff
+    return np.conjugate(Ff) #updated convention
     
     
 class LensingTransformPL(object):
